@@ -34,15 +34,15 @@ sm = si.smooth(ba.tau2pole(0.05)); //50 ms smoothing
 
 //ratios(i) = hslider("/h:main/ratio%1i [style:knob]", 1., 0.1, 2., 0.001);
 pluck(i) = button("/h:trigger/pluck%1i"); // buttons for manual plucking
-pluckrate = hslider("/h:trigger/auto pluck rate [style:knob][unit:hz]", 0.1, 0.0, 0.5, 0.001); // automatic plucking rate (Hz)
-enableautoplucker = checkbox("/h:trigger/enable auto pluck"); // enable automatic plucking
+//pluckrate = hslider("/h:trigger/auto pluck rate [style:knob][unit:hz]", 0.1, 0.0, 0.5, 0.001); // automatic plucking rate (Hz)
+//enableautoplucker = checkbox("/h:trigger/enable auto pluck"); // enable automatic plucking
 
 f0 = hslider("/h:main/[1]sa [style:knob]", 36, 24, 72, 1) : sm : ba.midikey2hz; // the base pitch of the drone
 t60 = hslider("/h:main/[2]decay_time [style:knob][unit:s]", 10, 0, 100, 0.1) : sm; // how long the strings decay
 damp = 1. - hslider("/h:main/[3]high_freq_loss [style:knob]", 0, 0, 1., 0.01) : sm; // string brightness
 fd = hslider("/h:main/[4]harmonic_motion [style:knob][scale:exp]", 0.001, 0., 1, 0.0001) : *(0.2) : sm; // controls the detuning of parallel waveguides that mimics harmonic motion of the tambura
 coupling = hslider("/h:main/[5]sympathetic_coupling [style:knob]", 0.1, 0., 1., 0.0001) : sm; // level of sympathetic coupling between strings
-jw = hslider("/h:main/[6]jawari [style:knob]", 0, 0, 1, 0.001) : *(0.1) : sm; // creates the buzzing / jawari effect 
+jw = hslider("/h:main/[6]jawari [style:knob]", 0, 0, 1, 0.001) : *(0.1) : sm; // creates the buzzing / jawari effect
 spread = hslider("/h:main/[7]string_spread [style:knob]", 1., 0., 1., 0.01) : sm; // stereo spread of strings
 
 tscale = hslider("/h:main/[8]tune_scale [style:knob]", 1, 0.9, 1.1, 0.001); //
@@ -68,7 +68,7 @@ tambura(NStrings) = ( couplingmatrix(NStrings), par(s, NStrings, excitation(s)) 
                     ) :> _,_ //stereo output
  with {
 
-    couplingmatrix(NStrings) = 
+    couplingmatrix(NStrings) =
       par(s, NStrings, *(coupling) : couplingfilter) // coupling filters
       <: par(s, NStrings, unsel(NStrings, s) :> _ ) // unsel makes sure the feedback is disconnected
 
@@ -78,9 +78,9 @@ tambura(NStrings) = ( couplingmatrix(NStrings), par(s, NStrings, excitation(s)) 
             U(s,s)=!;
             U(s,j)=_;
           };
-          
-          //couplingfilter = component("bridgeIR.dsp");
-          couplingfilter = fi.highshelf(1,-100,5000) : fi.peak_eq(14, 2500, 400) : fi.peak_eq(20, 7500, 650); // EQ to simulate bridge response
+
+          couplingfilter = component("bridgeIR.dsp");
+          //couplingfilter = fi.highshelf(1,-100,5000) : fi.peak_eq(14, 2500, 400) : fi.peak_eq(20, 7500, 650); // EQ to simulate bridge response
     };
 
     //pan(s) = _ <: *(1-v), *(v)
@@ -124,9 +124,9 @@ tambura(NStrings) = ( couplingmatrix(NStrings), par(s, NStrings, excitation(s)) 
     };
 };
 
-autoplucker= phasor(pluckrate) <: <(0.25), >(0.25) & <(0.5), >(0.5) & <(0.75), >(0.75) & <(1) : par(s, NStrings, *(enableautoplucker))
-with {
-  phasor(freq) = (freq/float(ma.SR) : (+ : ma.decimal) ~ _);
-};
+//autoplucker= phasor(pluckrate) <: <(0.25), >(0.25) & <(0.5), >(0.5) & <(0.75), >(0.75) & <(1) : par(s, NStrings, *(enableautoplucker))
+//with {
+//  phasor(freq) = (freq/float(ma.SR) : (+ : ma.decimal) ~ _);
+//};
 
-process = (par(s, NStrings, pluck(s)), autoplucker) :> tambura(NStrings) : *(vol), *(vol);
+process = (par(s, NStrings, pluck(s))) :> tambura(NStrings) : *(vol), *(vol);

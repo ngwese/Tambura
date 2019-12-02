@@ -1,1 +1,1 @@
-process = ffunction(float convolveBridgeIR(float), "BridgeIR.h", "");
+process = ffunction(float convolveBridgeIR(float), "bridgeIR.h", "");
